@@ -19,12 +19,18 @@ public class UserAction {
 	private Integer id;
 	private String password;
 	private String name;
+	private String csrf_token;
 	
 	static Logger log = Logger.getLogger(LoginAction.class.getName());	
 	
 	public String edit() {
 		
-		//TODO Day3 實作 CSRF token 防禦措施		
+		//TODO Day3 實作 CSRF token 防禦措施
+		if(csrf_token==null || !csrf_token.equals(ServletActionContext.getRequest().getSession().getAttribute("csrf_token"))) {			
+			log.error("沒帶CSRF token:"+csrf_token);
+			return "info";
+		}
+		
 				
 		log.info(LogModel.log_sanitized("Call edit method " + id + " " + password + " " + name));
 
@@ -126,5 +132,14 @@ public class UserAction {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public String getCsrf_token() {
+		return csrf_token;
+	}
+	public void setCsrf_token(String csrf_token) {
+		this.csrf_token = csrf_token;
+	}
+	
+	
 
 }

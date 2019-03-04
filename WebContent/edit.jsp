@@ -1,5 +1,6 @@
 <%@ page contentType = "text/html; charset=UTF-8" %>
 <%@ taglib prefix = "s" uri = "/struts-tags" %>
+<%@ page import="java.util.* " %>
 
 <html>
 
@@ -53,6 +54,12 @@
   		密碼 : <input id="password" type="password" name="password"  /> <br/>  		
   		暱稱 : <input id="name" type="text" name="name"   /> <br/>
   		<input type="hidden" name="id" value="${sessionScope.id}" />
+  		
+  		<%
+  			session.setAttribute("csrf_token",UUID.randomUUID().toString());
+  		%>
+  		
+  		<input type="hidden" name="csrf_token" value="${sessionScope.csrf_token}" />
    		<input type="button" onclick="check_edit()" value="變更資料"/>
 	</form>
 		 
