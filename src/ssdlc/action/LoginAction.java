@@ -22,7 +22,9 @@ public class LoginAction {
 	static Logger log = Logger.getLogger(LoginAction.class);
 	
 	private String account;
-	private String password;	
+	private String password;  
+	
+
 	
 	public String login() {
 		
@@ -43,7 +45,7 @@ public class LoginAction {
 			//finish TODO Day2 使用 prepareStatement 預防 SQL Injection
 			//Statement stmt = conn.createStatement();
 			PreparedStatement stmt = conn.prepareStatement(sql);
-			
+						
 			stmt.setString(1,"%"+account+"%");
 			stmt.setString(2,password);
 			
@@ -59,9 +61,7 @@ public class LoginAction {
 				String account = rs.getString("account");
 				String name = rs.getString("name");
 				String password = rs.getString("password");
-				
-				
-				//finish  TODO Day3 將 cookie 設定為只允許使用 HTTP 存取
+
 				Cookie cookie = new Cookie("account",account);
 				cookie.setHttpOnly(true);
 				ServletActionContext.getResponse().addCookie(cookie);
@@ -73,7 +73,7 @@ public class LoginAction {
 				
 				Map<String, Object> session = ActionContext.getContext().getSession();				
 				session.put("id",id);
-				//finish TODO Day2 針對 account 內容作 HTML消毒				
+							
 				session.put("account",account);
 				session.put("name",name);
 				
@@ -81,8 +81,7 @@ public class LoginAction {
 
 			}
 			else {
-				if(account!=null) {
-					//finish TODO Day2 針對訊息內容作對應的消毒			
+				if(account!=null) {								
 					//String msg = "帳號"+account+"不存在或是密碼錯誤";
 					String msg = "帳號"+Encode.forJavaScript(account)+"不存在或是密碼錯誤";
 					ServletActionContext.getRequest().setAttribute("msg",msg);

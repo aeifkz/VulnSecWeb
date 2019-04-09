@@ -25,7 +25,6 @@ public class UserAction {
 	
 	public String edit() {
 		
-		//TODO Day3 實作 CSRF token 防禦措施
 		if(csrf_token==null || !csrf_token.equals(ServletActionContext.getRequest().getSession().getAttribute("csrf_token"))) {			
 			log.error("沒帶CSRF token:"+csrf_token);
 			return "info";
@@ -58,8 +57,6 @@ public class UserAction {
 			log.debug(LogModel.log_sanitized("edit sql:"+sql));
 			ServletActionContext.getRequest().setAttribute("sql",sql);
 						
-			
-			//finish TODO Day2 使用 prepareStatement 預防 SQL Injection
 			//Statement stmt = conn.createStatement();
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			

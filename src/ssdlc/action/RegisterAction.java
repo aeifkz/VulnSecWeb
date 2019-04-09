@@ -26,8 +26,6 @@ public class RegisterAction {
 		
 		log.info(LogModel.log_sanitized("Call register method " + account + " " + password + " " + name));
 		
-		
-		//TODO Day2 針對帳號做格式驗證, 規則 ^[A-Za-z]{4,20}$
 		if(account.length()<4 || account.length()>20) {
 			ServletActionContext.getRequest().setAttribute("msg","帳號格式有問題");
 			return "info";
@@ -51,7 +49,6 @@ public class RegisterAction {
 			       sql = "insert into user (account,password,name)  values (?,?,?) ;";
 			log.debug(LogModel.log_sanitized("register sql:"+sql));
 			
-			//finish TODO Day2 使用 prepareStatement 預防 SQL Injection
 			//Statement stmt = conn.createStatement();
 			PreparedStatement stmt = conn.prepareStatement(sql);
 			
