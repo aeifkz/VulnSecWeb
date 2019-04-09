@@ -14,12 +14,15 @@
 <script>
 
 	$(document).ready(function() {
-		//finish TODO Day2 針對訊息內容作對應的消毒
+		
 		//編碼做在後端
 		var msg = "${requestScope.msg}";
+		
+		
+		
 		if (!(msg === "")) {			
 			alert(msg);
-			//finish TODO Day2 針對 msg 內容作 HTML 消毒			
+						
 			$('body').append(html_encode(msg));
 		}
 	});

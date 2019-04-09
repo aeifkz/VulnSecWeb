@@ -56,7 +56,14 @@
   		<input type="hidden" name="id" value="${sessionScope.id}" />
   		
   		<%
-  			session.setAttribute("csrf_token",UUID.randomUUID().toString());
+  		
+  			String csrf_token = UUID.randomUUID().toString();  		
+  			session.setAttribute("csrf_token",csrf_token);
+  			
+  			Cookie cookie = new Cookie("csrf_token",csrf_token);
+  			cookie.setHttpOnly(true);
+  			response.addCookie(cookie);
+  			
   		%>
   		
   		<input type="hidden" name="csrf_token" value="${sessionScope.csrf_token}" />
