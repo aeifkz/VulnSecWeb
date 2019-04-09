@@ -1,142 +1,144 @@
 package ssdlc.action;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Map;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.log4j.Logger;
-import org.apache.struts2.ServletActionContext;
+import org.owasp.encoder.Encode;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import com.opensymphony.xwork2.ActionContext;
+import com.sun.xml.internal.fastinfoset.Encoder;
 
-import ssdlc.model.DBModel;
+import ssdlc.bean.UserBean;
 import ssdlc.model.LogModel;
 
-public class UserAction {
-	
+@WebServlet(name = "edit", urlPatterns = "/edit")
+public class UserAction extends HttpServlet {
+
 	private Integer id;
+	private String account;
 	private String password;
 	private String name;
-	private String csrf_token;
-	
-	static Logger log = Logger.getLogger(LoginAction.class.getName());	
-	
-	public String edit() {
-		
-		if(csrf_token==null || !csrf_token.equals(ServletActionContext.getRequest().getSession().getAttribute("csrf_token"))) {			
-			log.error("沒帶CSRF token:"+csrf_token);
-			return "info";
+	private String token;
+
+	static Logger log = Logger.getLogger(LoginAction.class.getName());
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+		//Finish TODO Day2 實作 CSRF token 防禦措施
+		token = req.getParameter("token");
+				
+		if(token==null) {
+			log.info("有人在玩我的網站");
+			resp.sendRedirect("main.jsp");
+			return ;
+		}
+		else {
+			boolean flag = false;
+			Cookie [] req_cookie = req.getCookies();			
+			for(Cookie cookie : req_cookie) {
+				if(token.equals(cookie.getValue())) {
+					flag = true;
+					break;
+				}
+			}
+			
+			if(!flag) {
+				log.info("有人在玩我的網站的Cookie");
+				resp.sendRedirect("main.jsp");
+				return ;
+			}
 		}
 		
-				
-		log.info(LogModel.log_sanitized("Call edit method " + id + " " + password + " " + name));
+		
+		id = (req.getParameter("id")==null || req.getParameter("id").isEmpty()) ? null : Integer.parseInt(req.getParameter("id"));
+		account = req.getParameter("account"); ;
+		password = req.getParameter("password");
+		name = req.getParameter("name");
+		
+		log.info("name:"+name);
 
-		Connection conn = null;
-
+		
 		try {
 			
-			conn = new DBModel().getConnection();			
+			String FEATURE = null;
 			
-			String sql = "update user set account=account ";
-			
-			if(password!=null && !password.isEmpty()) {
-				//sql = sql + ", password='" + password + "'";
-				sql = sql + ", password=? ";				
-			}
-			
-			if(name!=null && !name.isEmpty()) {
-				//sql = sql + ", name='" + name + "'";
-				sql = sql + ", name=? ";
-			}
-			
-			//sql = sql + " where id=" + id;
-			sql = sql + " where id=? ";
-			
-			log.debug(LogModel.log_sanitized("edit sql:"+sql));
-			ServletActionContext.getRequest().setAttribute("sql",sql);
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 						
-			//Statement stmt = conn.createStatement();
-			PreparedStatement stmt = conn.prepareStatement(sql);
+			//Finish TODO Day2 針對XML解析函式關閉外部引入功能
+			FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
+			factory.setFeature(FEATURE, true);			
+			FEATURE = "http://xml.org/sax/features/external-general-entities";
+			factory.setFeature(FEATURE, false);			
+			FEATURE = "http://xml.org/sax/features/external-parameter-entities";
+			factory.setFeature(FEATURE, false);			
+			FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+			factory.setFeature(FEATURE, false);
 			
-			int index = 1;
-			
-			if(password!=null && !password.isEmpty()) {
-				stmt.setString(index,password);
-				index++;
-			}
-			
-			if(name!=null && !name.isEmpty()) {
-				stmt.setString(index,name);
-				index++;
-			}
-			
-			stmt.setInt(index,id);
+			factory.setXIncludeAware(false);
+			factory.setExpandEntityReferences(false);
 						
-			//int rs = stmt.executeUpdate(sql);
-			int rs = stmt.executeUpdate();
-						
-			if(rs>0) {
-				
-				ServletActionContext.getRequest().setAttribute("msg","修改資料成功");
-				
-				Map<String, Object> session = ActionContext.getContext().getSession();				
-				if(name!=null && !name.isEmpty()) {
-					session.put("name",name);
-				}
-				
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			
+			//透過 DocumentBuilderFactory 解析輸入參數 
+			Document doc = builder.parse(new InputSource(new StringReader(name)));
+			
+			NodeList nodes = doc.getElementsByTagName("name");
+			for(int i=0; i<nodes.getLength(); i++) {
+				name = nodes.item(i).getTextContent();
 			}
-			else {				
-				ServletActionContext.getRequest().setAttribute("msg","修改失敗");				
-			}			
-						
-			stmt.close();
-			conn.close();
-
-		} catch (Exception ex) {
-			log.error("資料庫操作錯誤",ex);			
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
+			log.info("XML parse錯誤");
 		}
 		
-		return "info";
-	}
-	
-	
-	
-	
-	
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
+		log.info(LogModel.log_sanitized("Call edit method " + id + " " + account + " " + password + " " + name));
 		
+		ServletContext context = getServletContext();
 	
-	public String getPassword() {
-		return password;
-	}
-	
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	
-	public String getName() {
-		return name;
+		if(account!=null && context.getAttribute(account)!=null) {
+			
+			UserBean user = (UserBean)context.getAttribute(account);			
+			HttpSession session = req.getSession();
+			
+			if (name != null && !name.isEmpty()) {
+				user.setName(name);
+				session.setAttribute("name", name);				
+			}			
+			if (password != null && !password.isEmpty()) {
+				user.setPassword(password);
+			}
+			
+			context.setAttribute(account,user);
+			
+			req.setAttribute("msg", "修改資料成功");
+			
+		}
+		else {
+			req.setAttribute("msg", "修改失敗");
+		}
+		
+		resp.sendRedirect("main.jsp");
+
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getCsrf_token() {
-		return csrf_token;
-	}
-	public void setCsrf_token(String csrf_token) {
-		this.csrf_token = csrf_token;
-	}
-	
 	
 
 }
