@@ -5,23 +5,13 @@
 	id="WebApp_ID" version="3.1">
 	<display-name>StrutsTest</display-name>
 
-	<filter>
-		<filter-name>struts2</filter-name>
-		<!-- 這邊名字要寫對 , 因為網路上的範例少 .ng -->
-		<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>struts2</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
 
 	<session-config>
 		<session-timeout>30</session-timeout>
 		 
+		<!-- Finish TODO Day2 修改 SessionId 的安全設定  -->
 		<cookie-config>			
-			<http-only>false</http-only>
+			<http-only>true</http-only>
 			<secure>false</secure>			
 		</cookie-config>
 		

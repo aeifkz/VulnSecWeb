@@ -1,6 +1,7 @@
+<%@ page import="java.security.SecureRandom" %>
 <%@ page contentType = "text/html; charset=UTF-8" %>
-<%@ taglib prefix = "s" uri = "/struts-tags" %>
-<%@ page import="java.util.* " %>
+
+
 
 <html>
 
@@ -49,29 +50,23 @@
    </head>
    
    <body>
+   
+   <%   
+   		SecureRandom random = new SecureRandom();
+   		String token = Math.abs(random.nextLong())+"";
+   		Cookie cookie = new Cookie("token",token);
+   		cookie.setHttpOnly(true);
+   		response.addCookie(cookie);
+   %>
       
-   	<form id="edit" action="edit.do" method="get">  		
+   	<form id="edit" action="edit" method="get">  		
   		密碼 : <input id="password" type="password" name="password"  /> <br/>  		
-  		暱稱 : <input id="name" type="text" name="name"   /> <br/>
-  		<input type="hidden" name="id" value="${sessionScope.id}" />
-  		
-  		<%
-  		
-  			String csrf_token = UUID.randomUUID().toString();  		
-  			session.setAttribute("csrf_token",csrf_token);
-  			
-  			Cookie cookie = new Cookie("csrf_token",csrf_token);
-  			cookie.setHttpOnly(true);
-  			response.addCookie(cookie);
-  			
-  		%>
-  		
-  		<input type="hidden" name="csrf_token" value="${sessionScope.csrf_token}" />
+  		暱稱 : <textarea id="name" name="name" rows="10" cols="50"></textarea> <br/>
+  		<input type="hidden" name="token" value="<%=token%>" />
+  		<input type="hidden" name="account" value="${sessionScope.account}" />
    		<input type="button" onclick="check_edit()" value="變更資料"/>
 	</form>
 		 
    </body>
-      
-   
     
 </html>
